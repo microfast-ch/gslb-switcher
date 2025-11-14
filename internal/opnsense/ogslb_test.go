@@ -522,7 +522,7 @@ func TestSwitchToPrimaryIP(t *testing.T) {
 			}
 
 			resp := unboundServiceResponse{
-				Response: "OK",
+				Status: "ok",
 			}
 			json.NewEncoder(w).Encode(resp) // nolint:errcheck
 		}
@@ -604,7 +604,7 @@ func TestSwitchToSecondaryIP(t *testing.T) {
 		case 3:
 			// Third call: reconfigure service
 			resp := unboundServiceResponse{
-				Response: "OK",
+				Status: "ok",
 			}
 			json.NewEncoder(w).Encode(resp) // nolint:errcheck
 		}
@@ -740,7 +740,7 @@ func TestSwitchToIP_ReconfigureFailure(t *testing.T) {
 		case 3:
 			// Third call: reconfigure fails
 			resp := unboundServiceResponse{
-				Response: "FAILED",
+				Status: "nok",
 			}
 			json.NewEncoder(w).Encode(resp) // nolint:errcheck
 		}
@@ -826,7 +826,7 @@ func TestSwitchToIP_AAAARecord(t *testing.T) {
 		case 3:
 			// Third call: reconfigure service
 			resp := unboundServiceResponse{
-				Response: "OK",
+				Status: "ok",
 			}
 			json.NewEncoder(w).Encode(resp) // nolint:errcheck
 		}

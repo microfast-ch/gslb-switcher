@@ -49,11 +49,24 @@ func (o *OpnSenseGslb) doRequest(method, url string, body []byte) (*http.Respons
 		Timeout: 10 * time.Second,
 	}
 
-	req, err := http.NewRequest(method, o.epHost+url, bytes.NewReader(body))
+	var req *http.Request
+	var err error
+
+	if body != nil {
+		req, err = http.NewRequest(method, o.epHost+url, bytes.NewReader(body))
+	} else {
+		req, err = http.NewRequest(method, o.epHost+url, nil)
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
-	req.Header.Set("Content-Type", "application/json")
+
+	// Only set Content-Type for requests with a body
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
 	o.setAuthHeader(req)
 
 	resp, err := client.Do(req)
@@ -89,10 +102,14 @@ type unboundSearchHostOverrideResponse struct {
 }
 
 func (o *OpnSenseGslb) getGslbRecordUUID(hostname string) (string, error) {
+	// We need to extract only the host name from the potential FQDN as
+	// the API only searches in the host part.
+	hostpart := strings.SplitN(hostname, ".", 2)[0]
+
 	// Prepare searchHostOverride request payload
 	reqPayload := &unboundSearchHostOverrideRequest{
 		RowCount:     10,
-		SearchPhrase: hostname,
+		SearchPhrase: hostpart,
 	}
 
 	payload, err := json.Marshal(reqPayload)
@@ -305,7 +322,7 @@ func (o *OpnSenseGslb) switchToIP(ip string) error {
 }
 
 type unboundServiceResponse struct {
-	Response string `json:"response"`
+	Status string `json:"status"`
 }
 
 func (o *OpnSenseGslb) restartUnboundService() error {
@@ -325,8 +342,8 @@ func (o *OpnSenseGslb) restartUnboundService() error {
 		return fmt.Errorf("decoding reconfigure response: %w", err)
 	}
 
-	if setResp.Response != "OK" {
-		return fmt.Errorf("reconfigure request failed: unexpected result %s", setResp.Response)
+	if setResp.Status != "ok" {
+		return fmt.Errorf("reconfigure request failed: unexpected result %s", setResp.Status)
 	}
 
 	return nil
