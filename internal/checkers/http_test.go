@@ -85,13 +85,13 @@ func TestSimpleHTTPChecker_CheckHealth(t *testing.T) {
 				}))
 				defer server.Close()
 
-				checker = NewSimpleHTTPChecker(server.URL)
+				checker = NewSimpleHTTPChecker(server.URL, false)
 			} else if tt.invalidURL {
 				// Use an invalid URL to test URL parsing error
-				checker = NewSimpleHTTPChecker("://invalid-url")
+				checker = NewSimpleHTTPChecker("://invalid-url", false)
 			} else {
 				// Use an unreachable URL to test connection error
-				checker = NewSimpleHTTPChecker("http://localhost:99999")
+				checker = NewSimpleHTTPChecker("http://localhost:99999", false)
 			}
 
 			healthy, statusMsg, err := checker.CheckHealth()
@@ -129,7 +129,7 @@ func TestSimpleHTTPChecker_CheckHealth(t *testing.T) {
 
 func TestNewSimpleHTTPChecker(t *testing.T) {
 	url := "http://example.com"
-	checker := NewSimpleHTTPChecker(url)
+	checker := NewSimpleHTTPChecker(url, false)
 
 	if checker == nil {
 		t.Fatal("NewSimpleHTTPChecker() returned nil")
@@ -137,6 +137,27 @@ func TestNewSimpleHTTPChecker(t *testing.T) {
 
 	if checker.URL != url {
 		t.Errorf("NewSimpleHTTPChecker() URL = %v, want %v", checker.URL, url)
+	}
+
+	if checker.SkipTLSVerify != false {
+		t.Errorf("NewSimpleHTTPChecker() SkipTLSVerify = %v, want false", checker.SkipTLSVerify)
+	}
+}
+
+func TestNewSimpleHTTPChecker_WithTLSSkip(t *testing.T) {
+	url := "https://example.com"
+	checker := NewSimpleHTTPChecker(url, true)
+
+	if checker == nil {
+		t.Fatal("NewSimpleHTTPChecker() returned nil")
+	}
+
+	if checker.URL != url {
+		t.Errorf("NewSimpleHTTPChecker() URL = %v, want %v", checker.URL, url)
+	}
+
+	if checker.SkipTLSVerify != true {
+		t.Errorf("NewSimpleHTTPChecker() SkipTLSVerify = %v, want true", checker.SkipTLSVerify)
 	}
 }
 
@@ -150,7 +171,7 @@ func TestSimpleHTTPChecker_CheckHealth_Retries(t *testing.T) {
 		}))
 		defer server.Close()
 
-		checker := NewSimpleHTTPChecker(server.URL)
+		checker := NewSimpleHTTPChecker(server.URL, false)
 		healthy, statusMsg, err := checker.CheckHealth()
 
 		if err != nil {
@@ -180,7 +201,7 @@ func TestSimpleHTTPChecker_CheckHealth_Retries(t *testing.T) {
 		}))
 		defer server.Close()
 
-		checker := NewSimpleHTTPChecker(server.URL)
+		checker := NewSimpleHTTPChecker(server.URL, false)
 		start := time.Now()
 		healthy, statusMsg, err := checker.CheckHealth()
 		elapsed := time.Since(start)
@@ -217,7 +238,7 @@ func TestSimpleHTTPChecker_CheckHealth_Retries(t *testing.T) {
 		}))
 		defer server.Close()
 
-		checker := NewSimpleHTTPChecker(server.URL)
+		checker := NewSimpleHTTPChecker(server.URL, false)
 		start := time.Now()
 		healthy, statusMsg, err := checker.CheckHealth()
 		elapsed := time.Since(start)
@@ -250,7 +271,7 @@ func TestSimpleHTTPChecker_CheckHealth_Retries(t *testing.T) {
 		}))
 		defer server.Close()
 
-		checker := NewSimpleHTTPChecker(server.URL)
+		checker := NewSimpleHTTPChecker(server.URL, false)
 		start := time.Now()
 		healthy, statusMsg, err := checker.CheckHealth()
 		elapsed := time.Since(start)
@@ -276,7 +297,7 @@ func TestSimpleHTTPChecker_CheckHealth_Retries(t *testing.T) {
 	t.Run("fails after 3 connection error attempts", func(t *testing.T) {
 		t.SkipNow() // Skipping to avoid long test times due to retries until retry logic is configurable
 		// Use an unreachable address
-		checker := NewSimpleHTTPChecker("http://localhost:99999")
+		checker := NewSimpleHTTPChecker("http://localhost:99999", false)
 		start := time.Now()
 		healthy, statusMsg, err := checker.CheckHealth()
 		elapsed := time.Since(start)

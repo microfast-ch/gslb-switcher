@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -19,6 +20,7 @@ func main() {
 	gslbPrimary := os.Getenv("GSLB_PRIMARY_IP")
 	gslbPrimaryCheck := os.Getenv("GSLB_PRIMARY_CHECK")
 	gslbSecondary := os.Getenv("GSLB_SECONDARY_IP")
+	gslbSkipTLSVerify, _ := strconv.ParseBool(os.Getenv("GSLB_PRIMARY_CHECK_SKIP_TLS_VERIFY"))
 
 	if gslbHost == "" || gslbPrimary == "" || gslbPrimaryCheck == "" || gslbSecondary == "" {
 		slog.Error("missing required environment variables",
@@ -31,7 +33,7 @@ func main() {
 	}
 
 	// Create checker, currently only SimpleHTTPChecker is supported
-	chk := checkers.NewSimpleHTTPChecker(gslbPrimaryCheck)
+	chk := checkers.NewSimpleHTTPChecker(gslbPrimaryCheck, gslbSkipTLSVerify)
 
 	cfg := gslb.GslbConfig{
 		Host:                 gslbHost,

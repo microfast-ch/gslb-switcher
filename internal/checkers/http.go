@@ -1,18 +1,21 @@
 package checkers
 
 import (
+	"crypto/tls"
 	"net/http"
 	"net/url"
 	"time"
 )
 
 type SimpleHTTPChecker struct {
-	URL string
+	URL           string
+	SkipTLSVerify bool
 }
 
-func NewSimpleHTTPChecker(url string) *SimpleHTTPChecker {
+func NewSimpleHTTPChecker(url string, skipTLSVerify bool) *SimpleHTTPChecker {
 	return &SimpleHTTPChecker{
-		URL: url,
+		URL:           url,
+		SkipTLSVerify: skipTLSVerify,
 	}
 }
 
@@ -26,8 +29,15 @@ func (c *SimpleHTTPChecker) CheckHealth() (bool, string, error) {
 		return false, "", err
 	}
 
+	// Configure HTTP client with optional TLS verification skip
+	transport := &http.Transport{}
+	if c.SkipTLSVerify {
+		transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+
 	client := &http.Client{
-		Timeout: 5 * time.Second,
+		Timeout:   5 * time.Second,
+		Transport: transport,
 	}
 
 	var lastStatus string

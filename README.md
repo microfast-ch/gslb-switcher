@@ -60,6 +60,12 @@ The application is configured entirely through environment variables:
 | `OPNSENSE_HOST` | OpnSense API endpoint base URL | `https://firewall.example.com` |
 | `OPNSENSE_AUTH` | OpnSense API authentication credentials | `key:secret` |
 
+### Optional Environment Variables
+
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `GSLB_PRIMARY_CHECK_SKIP_TLS_VERIFY` | Skip TLS certificate verification for health checks | `false` | `true` |
+
 Configuration Example:
 
 ```bash
@@ -69,6 +75,9 @@ export GSLB_PRIMARY_CHECK="https://10.0.0.201:6443/healthz"
 export GSLB_SECONDARY_IP="10.0.0.202"
 export OPNSENSE_HOST="https://opnsense.local"
 export OPNSENSE_AUTH="your-api-key:your-api-secret"
+
+# Optional: Skip TLS verification for health checks
+# export GSLB_PRIMARY_CHECK_SKIP_TLS_VERIFY="true"
 ```
 
 ### Docker Compose Example
@@ -86,6 +95,8 @@ services:
       - GSLB_SECONDARY_IP=10.0.0.102
       - OPNSENSE_HOST=https://firewall.example.com
       - OPNSENSE_AUTH=key:secret
+      # Optional: Skip TLS verification for health checks
+      # - GSLB_PRIMARY_CHECK_SKIP_TLS_VERIFY=true
     restart: unless-stopped
 ```
 
