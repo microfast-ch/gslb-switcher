@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -169,7 +170,7 @@ func (o *OpnSenseGslb) CheckPrimaryHealth() (bool, error) {
 	}
 
 	if !ok {
-		fmt.Printf("Primary health check failed: %s\n", status)
+		slog.Warn("Primary health check failed", "status", status)
 	}
 
 	return ok, nil
